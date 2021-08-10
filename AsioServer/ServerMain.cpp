@@ -6,12 +6,14 @@
 #include <asio.hpp>
 #include <functional>
 #include <memory>
+#include <istream>
 
 using namespace std;
 using namespace asio;
 
 class client_session : public enable_shared_from_this<client_session> {
 private:
+	error_code err;
 	ip::tcp::socket sock;
 	enum { max_buf = 1024 };
 	char read_buf[max_buf];
@@ -23,9 +25,35 @@ public:
 		return new_client_ses;
 	}
 
+	void Start() {
+		cout << "client session started, waiting for message..." << endl;
+		Write("you're welcome!\n");
+		sock.async_receive(buffer(read_buf), std::bind(&client_session::OnRead, shared_from_this()));
+	}
+
 	ip::tcp::socket& GetSocket() { return sock; }
 
 private:
+
+	void Write(string mes) {
+		std::copy(mes.begin(), mes.end(), write_buf);
+		sock.async_send(buffer(write_buf, mes.size()), std::bind(&client_session::OnWrite, shared_from_this()));
+	}
+
+	void Read() {
+		sock.async_receive(buffer(read_buf), std::bind(&client_session::OnRead, shared_from_this()));
+	}
+
+	void OnWrite() {
+		cout << "message was send" << endl;
+	}
+
+	void OnRead() {
+		cout << "message received: " << read_buf << endl;
+		memset(read_buf, 0x00, 1024);
+		Read();
+	}
+
 	client_session(io_context& con) : sock(con) {};
 };
 
@@ -49,9 +77,9 @@ private:
 
 	void AcceptHandler(std::shared_ptr<client_session> clt, error_code& err) {
 		cout << "new connection " << endl;
-		//clt->Start()
+		clients.push_back(clt);
+		clt->Start();
 		shared_ptr<client_session> new_client_ses = client_session::Create(context);
-		clients.push_back(new_client_ses);
 		acceptor.async_accept(new_client_ses->GetSocket(), std::bind(&Server::AcceptHandler, this, new_client_ses, err));
 	}
 };
