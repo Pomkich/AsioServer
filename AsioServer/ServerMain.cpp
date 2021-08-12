@@ -14,6 +14,8 @@ using namespace asio;
 class client_session : public enable_shared_from_this<client_session> {
 private:
 	error_code err;
+	// Server* serv_prt;
+	int session_id;
 	ip::tcp::socket sock;
 	enum { max_buf = 1024 };
 	char read_buf[max_buf];
@@ -31,14 +33,16 @@ public:
 		sock.async_receive(buffer(read_buf), std::bind(&client_session::OnRead, shared_from_this()));
 	}
 
-	ip::tcp::socket& GetSocket() { return sock; }
-
-private:
-
 	void Write(string mes) {
 		std::copy(mes.begin(), mes.end(), write_buf);
 		sock.async_send(buffer(write_buf, mes.size()), std::bind(&client_session::OnWrite, shared_from_this()));
 	}
+
+	ip::tcp::socket& GetSocket() { return sock; }
+	int GetSessionId() { return session_id; }
+
+private:
+	client_session(io_context& con) : sock(con) {};
 
 	void Read() {
 		sock.async_receive(buffer(read_buf), std::bind(&client_session::OnRead, shared_from_this()));
@@ -50,11 +54,32 @@ private:
 
 	void OnRead() {
 		cout << "message received: " << read_buf << endl;
+		HandleMessage();
 		memset(read_buf, 0x00, 1024);
 		Read();
 	}
 
-	client_session(io_context& con) : sock(con) {};
+	void HandleMessage() {
+		string message;
+		stringstream ss(read_buf);
+		getline(ss, message, '\n');
+
+		// удаляем пробелы с начала сообщения
+		auto iter = find_if(message.begin(), message.end(), [](char c) { return (c != ' '); });
+		if (iter != message.begin()) {
+			message.erase(remove(message.begin(), iter, ' '), iter);
+		}
+		// обработка сообшений
+		if (message == "-getclnts") {
+			// Server.SendClientsList(session_id);	//
+		}
+		else if (message == "-disconect") {
+			// Server.CloseSession(session_id);
+		}
+		else {
+			// Server.SendNewMessage(session_id);
+		}
+	}
 };
 
 class Server {
@@ -82,6 +107,7 @@ private:
 		shared_ptr<client_session> new_client_ses = client_session::Create(context);
 		acceptor.async_accept(new_client_ses->GetSocket(), std::bind(&Server::AcceptHandler, this, new_client_ses, err));
 	}
+
 };
 
 int main(int argc, char* argv[])
