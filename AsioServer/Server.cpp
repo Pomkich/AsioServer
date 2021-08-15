@@ -22,8 +22,8 @@ void Server::SendClientsList(int session_id) {
 
 void Server::CloseSession(int session_id) {
 	auto del_clt = find_if(clients.begin(), clients.end(), [&](shared_ptr<client_session> clt) {return (clt->GetSessionId() == session_id); });
+	del_clt->get()->Stop();
 	clients.erase(del_clt);
-	
 }
 
 void Server::SendNewMessage(int session_id, string message) {
@@ -38,7 +38,7 @@ void Server::AcceptHandler(std::shared_ptr<client_session> clt, error_code& err)
 	cout << "new connection " << endl;
 	clients.push_back(clt);
 	clt->Start();
-	shared_ptr<client_session> new_client_ses = client_session::Create(context, this, id_iter);
 	id_iter++;
+	shared_ptr<client_session> new_client_ses = client_session::Create(context, this, id_iter);
 	acceptor.async_accept(new_client_ses->GetSocket(), std::bind(&Server::AcceptHandler, this, new_client_ses, err));
 }
