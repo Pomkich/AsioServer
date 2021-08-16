@@ -15,8 +15,6 @@ void client_session::Start() {
 void client_session::Stop() {
 	if (!started) return;
 	started = false;
-	//sock.close();
-	delete serv_ptr;
 }
 
 void client_session::Write(string mes) {
@@ -28,6 +26,7 @@ void client_session::Write(string mes) {
 ip::tcp::socket& client_session::GetSocket() { return sock; }
 int client_session::GetSessionId() { return session_id; }
 
+client_session::~client_session() {};
 client_session::client_session(io_context& con, Server* sprt, int new_id) : sock(con), serv_ptr(sprt), session_id(new_id), started(false) {};
 
 void client_session::Read() {

@@ -6,6 +6,7 @@ void Server::Run() {
 	error_code err;
 	shared_ptr<client_session> new_client_ses = client_session::Create(context, this, id_iter);
 	acceptor.async_accept(new_client_ses->GetSocket(), std::bind(&Server::AcceptHandler, this, new_client_ses, err));
+	new_client_ses.reset();
 	context.run();
 }
 

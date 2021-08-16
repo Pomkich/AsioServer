@@ -28,6 +28,7 @@ public:
 
 	ip::tcp::socket& GetSocket();
 	int GetSessionId();
+	~client_session();
 
 private:
 	client_session(io_context& con, Server* sprt, int new_id);
