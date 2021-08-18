@@ -13,7 +13,7 @@ private:
 	int id_iter = 0;
 	io_context context;
 	ip::tcp::acceptor acceptor;
-	vector<shared_ptr<client_session>> clients;
+	list<shared_ptr<client_session>> clients;
 
 public:
 	Server(ip::tcp::endpoint ep);

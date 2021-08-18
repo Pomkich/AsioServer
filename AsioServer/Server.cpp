@@ -12,13 +12,14 @@ void Server::Run() {
 
 void Server::SendClientsList(int session_id) {
 	string clt_list = "\nClients on this server:\n";
-	for (int i = 0; i < clients.size(); i++) {
+	for (auto it = clients.begin(); it != clients.end(); it++) {
 		string clt = "\t";
-		clt += to_string(clients[i]->GetSessionId());
+		clt += to_string(it->get()->GetSessionId());
 		clt += ";\n";
 		clt_list += clt;
 	}
-	clients[session_id]->Write(clt_list);
+	auto it = find_if(clients.begin(), clients.end(), [&](shared_ptr<client_session> s) {return (s->GetSessionId() == session_id); });
+	it->get()->Write(clt_list);
 }
 
 void Server::CloseSession(int session_id) {
@@ -28,9 +29,9 @@ void Server::CloseSession(int session_id) {
 }
 
 void Server::SendNewMessage(int session_id, string message) {
-	for (int i = 0; i < clients.size(); i++) {
-		if (i != session_id) {
-			clients[i]->Write(message);
+	for (auto it = clients.begin(); it != clients.end(); it++) {
+		if (it->get()->GetSessionId() != session_id) {
+			it->get()->Write(message);
 		}
 	}
 }
