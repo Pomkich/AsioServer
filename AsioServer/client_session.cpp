@@ -8,7 +8,7 @@ shared_ptr<client_session> client_session::Create(io_context& con, Server* sprt,
 void client_session::Start() {
 	started = true;
 	cout << "client session started, waiting for login..." << endl;
-	Write("Enter your name please: \n");
+	Write("[SERVER]: Waiting for login (<-login> <name>): \n");
 	sock.async_receive(buffer(read_buf), std::bind(&client_session::OnRead, shared_from_this()));
 }
 
@@ -61,6 +61,9 @@ void client_session::HandleMessage() {
 	ss = stringstream(message);
 
 	// обработка сообшений
+	if (message == "-disconect") {
+		serv_ptr->CloseSession(session_id);
+	}
 	if (!logined) {
 		string com, nam;
 		ss >> com >> nam;
@@ -76,9 +79,6 @@ void client_session::HandleMessage() {
 	else {
 		if (message == "-getclnts") {
 			serv_ptr->SendClientsList(session_id);	//
-		}
-		else if (message == "-disconect") {
-			serv_ptr->CloseSession(session_id);
 		}
 		else {
 			serv_ptr->SendNewMessage(session_id, message);
