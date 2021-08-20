@@ -13,11 +13,13 @@ private:
 	error_code err;
 	Server* serv_ptr;
 	int session_id;
+	string name;
 	ip::tcp::socket sock;
 	enum { max_buf = 1024 };
 	char read_buf[max_buf];
 	char write_buf[max_buf];
 	bool started;
+	bool logined;
 
 public:
 	static shared_ptr<client_session> Create(io_context& con, Server* sprt, int new_id);
@@ -28,6 +30,7 @@ public:
 
 	ip::tcp::socket& GetSocket();
 	int GetSessionId();
+	string GetName();
 	~client_session();
 
 private:

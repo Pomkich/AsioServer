@@ -14,7 +14,8 @@ void Server::SendClientsList(int session_id) {
 	string clt_list = "\nClients on this server:\n";
 	for (auto it = clients.begin(); it != clients.end(); it++) {
 		string clt = "\t";
-		clt += to_string(it->get()->GetSessionId());
+		clt += "Name: " + it->get()->GetName() + ", ";
+		clt += "Id: " + to_string(it->get()->GetSessionId());
 		clt += ";\n";
 		clt_list += clt;
 	}
@@ -29,9 +30,13 @@ void Server::CloseSession(int session_id) {
 }
 
 void Server::SendNewMessage(int session_id, string message) {
+	auto it = find_if(clients.begin(), clients.end(), [&](shared_ptr<client_session> ptr) {return ptr->GetSessionId() == session_id; });
+	string identifaer = '[' + it->get()->GetName() + ", " + to_string(it->get()->GetSessionId()) + "]: ";
+	identifaer += message;
+
 	for (auto it = clients.begin(); it != clients.end(); it++) {
 		if (it->get()->GetSessionId() != session_id) {
-			it->get()->Write(message);
+			it->get()->Write(identifaer);
 		}
 	}
 }
