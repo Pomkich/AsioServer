@@ -16,7 +16,8 @@ using namespace asio;
 int main(int argc, char* argv[])
 {
 	error_code err;
-	Server serv(ip::tcp::endpoint(ip::address::from_string("127.0.0.1"), 8001));
+	cout << "your address: " << ip::address_v4() << endl;
+	Server serv(ip::tcp::endpoint(ip::address_v4(), 8001));
 
 	serv.Run();
 }

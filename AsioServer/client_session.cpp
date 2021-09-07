@@ -38,7 +38,7 @@ void client_session::Read() {
 }
 
 void client_session::OnWrite() {
-	cout << "message was send" << endl;
+	
 }
 
 void client_session::OnRead() {
